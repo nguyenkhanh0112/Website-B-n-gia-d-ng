@@ -21,6 +21,7 @@ router.use('/work-preferences', require('./guest/work_preferences'));
 router.use('/posts', require('./guest/article'));
 router.use('/menus', require('./guest/menu'));
 router.use('/debug', require('./debug/product'));
+router.use('/cart', require('./user/cart')); // Them cart route
 
 // router.use('/guest', require('./guest/guest'));
 router.get(

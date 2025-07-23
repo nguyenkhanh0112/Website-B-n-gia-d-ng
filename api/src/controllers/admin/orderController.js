@@ -79,32 +79,62 @@ exports.update = async (req, res) => {
         const id = req.params.id;
         const orderData = req.body;
 
+        console.log(`=== UPDATING ORDER ${id} ===`);
+        console.log('Order data received:', JSON.stringify(orderData, null, 2));
+
         // Lấy thông tin đơn hàng hiện tại để so sánh trạng thái thanh toán
         const existingOrder = await Model.findById(id);
         if (!existingOrder) {
             return errorResponse(res, 'Order not found', 404);
         }
 
+        console.log('Existing order payment_status:', existingOrder.payment_status);
+        console.log('New order payment_status:', orderData.payment_status);
+
         // Cập nhật đơn hàng
         const newOrder = await Model.updateById(id, orderData);
+        console.log('Order updated successfully');
 
         // Kiểm tra nếu payment_status chuyển từ trạng thái khác sang "completed"
         if (existingOrder.payment_status !== 'completed' && orderData.payment_status === 'completed') {
             console.log('Payment status changed to completed, updating product stock...');
 
             // Lấy danh sách sản phẩm trong đơn hàng và trừ số lượng
+            let stockUpdateFailed = false;
+            const failedProducts = [];
+
             for (const product of newOrder.products) {
                 try {
-                    const stockUpdated = await Product.updateStock(product.id, product.qty);
+                    // Sử dụng qty thay vì quantity vì trong database là qty
+                    const quantity = product.qty || product.quantity || 1;
+                    const stockUpdated = await Product.updateStock(product.id, quantity);
                     if (!stockUpdated) {
                         console.warn(`Failed to update stock for product ID: ${product.id}, insufficient stock`);
-                        // Có thể thêm logic xử lý khi không đủ hàng
+                        stockUpdateFailed = true;
+                        failedProducts.push({
+                            id: product.id,
+                            name: product.name || `Product ${product.id}`,
+                            requested: quantity
+                        });
                     } else {
-                        console.log(`Updated stock for product ID: ${product.id}, quantity: ${product.qty}`);
+                        console.log(`Updated stock for product ID: ${product.id}, quantity: ${quantity}`);
                     }
                 } catch (stockError) {
                     console.error(`Error updating stock for product ID: ${product.id}:`, stockError);
+                    stockUpdateFailed = true;
+                    failedProducts.push({
+                        id: product.id,
+                        name: product.name || `Product ${product.id}`,
+                        error: stockError.message
+                    });
                 }
+            }
+
+            // Nếu có sản phẩm không đủ hàng, có thể cần rollback payment_status
+            if (stockUpdateFailed) {
+                console.warn('Some products failed to update stock:', failedProducts);
+                // Tùy chọn: có thể rollback payment_status về trạng thái cũ
+                // await Model.updateById(id, { ...orderData, payment_status: existingOrder.payment_status });
             }
         }
 
@@ -115,8 +145,9 @@ exports.update = async (req, res) => {
             // Lấy danh sách sản phẩm trong đơn hàng cũ và hoàn trả số lượng
             for (const product of existingOrder.products) {
                 try {
-                    await Product.restoreStock(product.id, product.qty);
-                    console.log(`Restored stock for product ID: ${product.id}, quantity: ${product.qty}`);
+                    const quantity = product.qty || product.quantity || 1;
+                    await Product.restoreStock(product.id, quantity);
+                    console.log(`Restored stock for product ID: ${product.id}, quantity: ${quantity}`);
                 } catch (stockError) {
                     console.error(`Error restoring stock for product ID: ${product.id}:`, stockError);
                 }
@@ -173,17 +204,37 @@ exports.updateStatus = async (req, res) => {
             if (oldPaymentStatus !== 'completed' && payment_status === 'completed') {
                 console.log('Payment status changed to completed, updating product stock...');
 
+                let stockUpdateFailed = false;
+                const failedProducts = [];
+
                 for (const product of order.products) {
                     try {
-                        const stockUpdated = await Product.updateStock(product.id, product.qty);
+                        const quantity = product.qty || product.quantity || 1;
+                        const stockUpdated = await Product.updateStock(product.id, quantity);
                         if (!stockUpdated) {
                             console.warn(`Failed to update stock for product ID: ${product.id}, insufficient stock`);
+                            stockUpdateFailed = true;
+                            failedProducts.push({
+                                id: product.id,
+                                name: product.name || `Product ${product.id}`,
+                                requested: quantity
+                            });
                         } else {
-                            console.log(`Updated stock for product ID: ${product.id}, quantity: ${product.qty}`);
+                            console.log(`Updated stock for product ID: ${product.id}, quantity: ${quantity}`);
                         }
                     } catch (stockError) {
                         console.error(`Error updating stock for product ID: ${product.id}:`, stockError);
+                        stockUpdateFailed = true;
+                        failedProducts.push({
+                            id: product.id,
+                            name: product.name || `Product ${product.id}`,
+                            error: stockError.message
+                        });
                     }
+                }
+
+                if (stockUpdateFailed) {
+                    console.warn('Some products failed to update stock in updateStatus:', failedProducts);
                 }
             }
             else if (oldPaymentStatus === 'completed' && payment_status !== 'completed') {
@@ -191,8 +242,9 @@ exports.updateStatus = async (req, res) => {
 
                 for (const product of order.products) {
                     try {
-                        await Product.restoreStock(product.id, product.qty);
-                        console.log(`Restored stock for product ID: ${product.id}, quantity: ${product.qty}`);
+                        const quantity = product.qty || product.quantity || 1;
+                        await Product.restoreStock(product.id, quantity);
+                        console.log(`Restored stock for product ID: ${product.id}, quantity: ${quantity}`);
                     } catch (stockError) {
                         console.error(`Error restoring stock for product ID: ${product.id}:`, stockError);
                     }

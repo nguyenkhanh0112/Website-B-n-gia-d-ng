@@ -12,15 +12,17 @@ exports.getAll = async (req, res) => {
             brand_id,
             label_id,
             sort,
+            rating,
             price_from
         } = req.query;
-
+    
         const result = await Model.getAll(
             Number(page || 1),
             Number(pageSize || 10),
             name,
             category_id,
             sort || 'newest',
+            rating ? Number(rating) : null,
             label_id ? Number(label_id) : null,
             brand_id ? Number(brand_id) : null,
             price_from ? Number(price_from) : null

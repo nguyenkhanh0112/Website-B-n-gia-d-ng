@@ -12,6 +12,8 @@ import toastr from "toastr";
 import slideService from "../../api/slideService";
 import { LOGO } from "../../helpers/constant";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { handlePostLoginRedirect } from "../../helpers/authHelpers";
+import { loadCartFromBackend } from "../../redux/slices/cartSlice";
 
 
 const Login = () => {
@@ -74,11 +76,15 @@ const Login = () => {
                 if (response.user.user_type === "ADMIN") {
                     navigate("/admin");
                 } else {
-                    navigate("/");
+                    // ✅ Load giỏ hàng từ backend sau khi login thành công
+                    startTransition(() => {
+                        dispatch(loadCartFromBackend());
+                    });
+                    // Sử dụng helper để xử lý chuyển hướng sau login
+                    handlePostLoginRedirect(navigate, "/");
                 }
             } else {
                 console.info("===========[] ===========[FAIL ROI] : ");
-                // toastr.error('Sai thông tin hoạc tài khoản không hợp lệ', 'Error');
                 setSubmitting(false);
             }
             return true;

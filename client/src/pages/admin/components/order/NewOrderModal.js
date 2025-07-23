@@ -97,7 +97,7 @@ const NewOrderModal = ({ show, onHide, orderToUpdate, refreshOrders }) => {
                 value: product.id,
                 label: product.name,
                 price: product.price,
-                quantity: product.quantity,
+                quantity: product.qty || product.quantity || 1, // Sử dụng qty từ database
                 avatar: product.avatar,
             })));
             // Gán payment_status và order_status từ orderToUpdate
@@ -174,17 +174,27 @@ const NewOrderModal = ({ show, onHide, orderToUpdate, refreshOrders }) => {
             status: orderStatus.value,
         };
 
+        console.log('Saving order with data:', orderData);
+
         try {
+            let response;
             if (orderToUpdate && Object.keys(orderToUpdate).length > 0) {
-                await apiOrderService.updateOrder(orderToUpdate.id, orderData);
+                console.log('Updating order ID:', orderToUpdate.id);
+                response = await apiOrderService.updateOrder(orderToUpdate.id, orderData);
+                console.log('Update response:', response);
+                alert('Đơn hàng đã được cập nhật thành công!');
             } else {
-                await apiOrderService.createOrder(orderData);
+                console.log('Creating new order');
+                response = await apiOrderService.createOrder(orderData);
+                console.log('Create response:', response);
+                alert('Đơn hàng đã được tạo thành công!');
             }
 
             await refreshOrders(); // Gọi hàm refreshOrders sau khi lưu thành công
             onHide();
         } catch (error) {
             console.error('Error saving order:', error);
+            console.error('Error details:', error.response?.data);
             alert(error.response?.data?.message || 'Có lỗi xảy ra khi lưu đơn hàng');
         }
     };

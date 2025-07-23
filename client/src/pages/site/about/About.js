@@ -221,9 +221,9 @@ const About = () => {
                     <Row>
                         <Col lg={4} md={6} className="mb-4">
                             <Card className="team-card">
-                                <div className="team-image">
+                                {/* <div className="team-image">
                                     <img src="/images/team-1.jpg" alt="CEO" className="img-fluid" />
-                                </div>
+                                </div> */}
                                 <Card.Body className="text-center">
                                     <h5>Nguyễn Văn A</h5>
                                     <p className="team-position">Giám đốc điều hành</p>
@@ -233,9 +233,9 @@ const About = () => {
                         </Col>
                         <Col lg={4} md={6} className="mb-4">
                             <Card className="team-card">
-                                <div className="team-image">
+                                {/* <div className="team-image">
                                     <img src="/images/team-2.jpg" alt="Product Manager" className="img-fluid" />
-                                </div>
+                                </div> */}
                                 <Card.Body className="text-center">
                                     <h5>Trần Thị B</h5>
                                     <p className="team-position">Quản lý sản phẩm</p>
@@ -245,9 +245,9 @@ const About = () => {
                         </Col>
                         <Col lg={4} md={6} className="mb-4">
                             <Card className="team-card">
-                                <div className="team-image">
+                                {/* <div className="team-image">
                                     <img src="/images/team-3.jpg" alt="Customer Service" className="img-fluid" />
-                                </div>
+                                </div> */}
                                 <Card.Body className="text-center">
                                     <h5>Lê Văn C</h5>
                                     <p className="team-position">Trưởng phòng chăm sóc khách hàng</p>

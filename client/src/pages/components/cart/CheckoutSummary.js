@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Button } from "react-bootstrap";
+import { formatPrice } from "../../../helpers/formatters";
 
 const CheckoutSummary = ({
                              cartItems,
@@ -37,7 +38,7 @@ const CheckoutSummary = ({
                         </div>
                         <div className="text-end">
                             <p className="mb-0">
-                                <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                                <strong>{formatPrice(item.price * item.quantity)}</strong>
                             </p>
                             <small className="text-muted">x{item.quantity}</small>
                         </div>
@@ -49,30 +50,30 @@ const CheckoutSummary = ({
             <div className="summary-details">
                 <div className="d-flex justify-content-between">
                     <span>Tạm tính:</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="d-flex justify-content-between">
                     <span>Thuế (VAT):</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatPrice(tax)}</span>
                 </div>
                 <div className="d-flex justify-content-between">
                     <span>Phí vận chuyển:</span>
-                    <span>${shippingFee.toFixed(2)}</span>
+                    <span>{formatPrice(shippingFee)}</span>
                 </div>
                 {discountAmount > 0 && (
                     <div className="d-flex justify-content-between">
                         <span>Giảm giá:</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
+                        <span>-{formatPrice(discountAmount)}</span>
                     </div>
                 )}
                 <hr />
                 <div className="d-flex justify-content-between">
                     <strong>Tổng cộng:</strong>
-                    <strong>${total.toFixed(2)}</strong>
+                    <strong>{formatPrice(total)}</strong>
                 </div>
             </div>
 
-            <div className="mt-4">
+            {/* <div className="mt-4">
                 <p className="mb-2">Bạn có mã phiếu giảm giá?</p>
                 <div className="d-flex">
                     <Form.Control
@@ -85,7 +86,7 @@ const CheckoutSummary = ({
                         Áp dụng
                     </Button>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

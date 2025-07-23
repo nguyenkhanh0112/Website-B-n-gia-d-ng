@@ -95,6 +95,7 @@ const authSlice = createSlice( {
 		{
 			localStorage.removeItem( 'token' );
 			localStorage.removeItem( 'user' );
+			localStorage.removeItem( 'cart' ); // Xóa giỏ hàng khi logout
 			state.token = null;
 			state.isAuthenticated = false;
 			state.user = null;

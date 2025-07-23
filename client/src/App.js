@@ -24,6 +24,8 @@ import ImageUploadPage from "./pages/site/ImageUploadPage";
 import UnauthorizedPage from "./pages/site/errors/Unauthorized";
 import PaymentSuccessAlert from './pages/site/shopping-cart/PaymentSuccessAlert';
 
+// Import debug helper for development
+import './helpers/cartDebugHelper';
 
 const AuthLayout = React.lazy(() => import('./components/AuthLayout'));
 const GuestLayout = React.lazy(() => import('./components/GuestLayout'));

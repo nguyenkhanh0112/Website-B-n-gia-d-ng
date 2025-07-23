@@ -1,24 +1,51 @@
 import React, {startTransition, useEffect, useState} from 'react';
-import { Container, Navbar, Nav, Form, FormControl, Button, Dropdown } from 'react-bootstrap';
-import { FaSearch, FaShoppingCart, FaBars, FaChevronDown, FaUser } from 'react-icons/fa';
+import { Container, Navbar, Nav, Button, Dropdown } from 'react-bootstrap';
+import { FaShoppingCart, FaBars, FaChevronDown, FaUser } from 'react-icons/fa';
 import {Link, useNavigate} from "react-router-dom";
 import '../style/style_header.css';
 import {useDispatch, useSelector} from "react-redux";
 import {logout} from "../../../redux/slices/authSlice";
-import SearchBar from "./SearchBar";
+import {clearCartOnLogout} from "../../../redux/slices/cartSlice";
+
 import categoryService from '../../../api/categoryService';
 
 const Header = ({information, isAuthenticated, handleBookingShow}) => {
     const itemCount = useSelector((state) => state.cart.itemCount);
+    const cartLoading = useSelector((state) => state.cart.loading);
     const user = useSelector((state) => state.auth.user);
+
+    // ✅ DEBUG: Log cart count changes
+    useEffect(() => {
+        console.log('=== HEADER CART COUNT UPDATE ===');
+        console.log('isAuthenticated:', isAuthenticated);
+        console.log('itemCount:', itemCount);
+        console.log('cartLoading:', cartLoading);
+        console.log('user:', user?.name);
+    }, [itemCount, isAuthenticated, user, cartLoading]);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    
     const handleLogout = () => {
+        dispatch(clearCartOnLogout()); // Xóa giỏ hàng trước khi logout
         dispatch(logout());
         startTransition(() => {
             navigate("/login");
         });
+    };
+
+    // ✅ Function kiểm tra đăng nhập trước khi vào cart
+    const handleCartClick = (e) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            startTransition(() => {
+                navigate("/login");
+            });
+        } else {
+            startTransition(() => {
+                navigate("/cart");
+            });
+        }
     };
 
     const [categories, setCategories] = useState([]);
@@ -118,11 +145,6 @@ const Header = ({information, isAuthenticated, handleBookingShow}) => {
 
                     {/* Header actions - Hebekery style */}
                     <div className="hebekery-header-actions">
-                        {/* Search icon */}
-                        <div className="hebekery-search-icon">
-                            <FaSearch />
-                        </div>
-
                         {/* User icon */}
                         {isAuthenticated ? (
                             <Dropdown align="end" className="hebekery-user-dropdown">
@@ -154,13 +176,19 @@ const Header = ({information, isAuthenticated, handleBookingShow}) => {
                             </Link>
                         )}
 
-                        {/* Cart icon */}
-                        <Link to="/cart" className="hebekery-cart-icon">
+                        {/* Cart icon - luôn hiển thị, kiểm tra đăng nhập khi click */}
+                        <a href="/cart" className="hebekery-cart-icon" onClick={handleCartClick}>
                             <FaShoppingCart />
-                            {itemCount > 0 && (
-                                <span className="hebekery-cart-badge">{itemCount}</span>
-                            )}
-                        </Link>
+                        {isAuthenticated && (
+                                cartLoading ? (
+                                    <span className="hebekery-cart-badge loading">...</span>
+                                ) : (
+                                    itemCount > 0 && (
+                                    <span className="hebekery-cart-badge">{itemCount}</span>
+                                    )
+                                )
+                                )}
+                        </a>
                     </div>
                 </Container>
             </Navbar>
@@ -173,26 +201,19 @@ const Header = ({information, isAuthenticated, handleBookingShow}) => {
                             <FaBars/>
                         </Button>
 
-                        <div className="search-container flex-grow-1 mx-3">
-                            <Form className="d-flex">
-                                <FormControl
-                                    type="search"
-                                    placeholder="Bạn đang tìm kiếm gì"
-                                    className="search-input"
-                                    aria-label="Search"
-                                />
-                                <Button variant="outline-light" className="search-btn">
-                                    <FaSearch/>
-                                </Button>
-                            </Form>
-                        </div>
-
-                        <Link to="/cart" className="cart-icon text-white">
+                        {/* Cart icon mobile - luôn hiển thị, kiểm tra đăng nhập khi click */}
+                        <a href="/cart" className="cart-icon text-white" onClick={handleCartClick}>
                             <FaShoppingCart/>
-                            {itemCount > 0 && (
-                                <span className="cart-badge">{itemCount}</span>
-                            )}
-                        </Link>
+                        {isAuthenticated && (
+                                cartLoading ? (
+                                    <span className="cart-badge loading">...</span>
+                                ) : (
+                                    itemCount > 0 && (
+                                    <span className="cart-badge">{itemCount}</span>
+                                    )
+                                )
+                                )}
+                        </a>
                     </div>
                 </Container>
             </Navbar>
