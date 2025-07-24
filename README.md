@@ -27,5 +27,5 @@ Website mô phỏng bán hàng gia dụng đơn giản, sử dụng HTML, CSS, J
 - Node.js, Express.js (backend)
 
 ## 🌐 Link demo
-
+[Truy cập link]([Truy cập website](https://drive.google.com/drive/folders/1ytsW1M4R71D0lFVcH457mtPfXRrFSabI?usp=sharing))
 
